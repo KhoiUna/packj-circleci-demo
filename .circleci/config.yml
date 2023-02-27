@@ -34,7 +34,6 @@ jobs:
           name: Test
           command: |
            echo $GH_USER:$GH_TOKEN
-           echo "$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME/pulls?head=$CIRCLE_PROJECT_USERNAME:$CIRCLE_BRANCH&state=open"
       - run:
           name: Comment on GitHub pull request
           command: |
