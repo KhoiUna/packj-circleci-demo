@@ -30,10 +30,7 @@ jobs:
                     input=$(echo $input_files | sed 's/,/ /g')
                     python ./packj/main.py audit -f $input
             fi
-      - run:
-          name: Test
-          command: |
-           echo $GH_USER:$GH_TOKEN
+      - run: echo $GH_USER:$GH_TOKEN
       - run:
           name: Comment on GitHub pull request
           command: |
@@ -46,14 +43,13 @@ jobs:
               echo "No PR found to update"
             else
               pr_comment_url=$(echo $pr_response | jq -r ".[]._links.comments.href")
+              curl --location --request POST "$pr_comment_url" \
+                -u $GH_USER:$GH_TOKEN \
+                --header 'Content-Type: application/json' \
+                --data-raw '{
+                "body": "This would be the data to add"
+                }'
             fi
-
-            curl --location --request POST "$pr_comment_url" \
-            -u $GH_USER:$GH_TOKEN \
-            --header 'Content-Type: application/json' \
-            --data-raw '{
-            "body": "This would be the data to add"
-            }'
     environment:
       DEPENDENCY_FILES: pypi:requirements.txt,npm:package.json,rubygems:Gemfile
 
