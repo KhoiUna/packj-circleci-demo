@@ -1,7 +1,7 @@
 version: 2.1
 
 jobs:
-  install-packj:
+  packj-audit:
     docker:
       - image: circleci/python:3.8
     steps:
@@ -11,12 +11,6 @@ jobs:
       - run: git clone https://github.com/ossillate-inc/packj
       - run: /usr/local/bin/python -m pip install --upgrade pip
       - run: pip install -r ./packj/requirements.txt
-      # packj-audit:
-      #   docker:
-      #     - image: circleci/python:3.8
-      #   steps:
-      #     - checkout
-      #     - run: ls -al
       - run:
           name: Audit dependency files with Packj
           command: |
@@ -36,6 +30,11 @@ jobs:
                     input=$(echo $input_files | sed 's/,/ /g')
                     python ./packj/main.py audit -f $input
             fi
+      - run:
+          name: Test
+          command: |
+           echo $GH_USER:$GH_TOKEN
+           echo "$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME/pulls?head=$CIRCLE_PROJECT_USERNAME:$CIRCLE_BRANCH&state=open"
       - run:
           name: Comment on GitHub pull request
           command: |
@@ -62,7 +61,7 @@ jobs:
 workflows:
   build:
     jobs:
-      - install-packj:
+      - packj-audit:
           filters:
             branches:
               only: main
