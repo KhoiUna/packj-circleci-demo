@@ -16,6 +16,7 @@ jobs:
     docker:
       - image: circleci/python:3.8
     steps:
+      - checkout
       - run: ls -al
       - run:
           name: Audit dependency files with Packj
