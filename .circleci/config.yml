@@ -1,7 +1,7 @@
 version: 2.1
 
 jobs:
-  packj-audit:
+  install-packj:
     docker:
       - image: circleci/python:3.8
     steps:
@@ -11,31 +11,61 @@ jobs:
       - run: git clone https://github.com/ossillate-inc/packj
       - run: /usr/local/bin/python -m pip install --upgrade pip
       - run: pip install -r ./packj/requirements.txt
+
+  packj-audit:
+    docker:
+      - image: circleci/python:3.8
+    steps:
+      - run: ls -al
       - run:
           name: Audit dependency files with Packj
           command: |
-            input=$(echo $DEPENDENCY_FILES | sed 's/,/ /g')                                                                                
-            input_files=()                                                                                                        
+            input=$(echo $DEPENDENCY_FILES | sed 's/,/ /g')
+            input_files=()
 
             for item in $input
-            do                                                                                                 
-                    if [[ $item == *":"* ]]; then                                                                                
-                            pm_name=$(echo $item | cut -f1 -d:)                                                                                
-                            dep_file=$(echo $item | cut -f2 -d:)                                                                                
-                            input_files+=$pm_name":"$dep_file,                                                                                
-                    fi                                                                                
-            done                                                                                
-                                                                                                            
-            if [ ! -z input_files ]; then                                                   
-                    input=$(echo $input_files | sed 's/,/ /g')                                                           
-                    python ./packj/main.py audit -f $input                                                                                   
+            do
+                    if [[ $item == *":"* ]]; then
+                            pm_name=$(echo $item | cut -f1 -d:)
+                            dep_file=$(echo $item | cut -f2 -d:)
+                            input_files+=$pm_name":"$dep_file,
+                    fi
+            done
+
+            if [ ! -z input_files ]; then
+                    input=$(echo $input_files | sed 's/,/ /g')
+                    python ./packj/main.py audit -f $input
             fi
+      - run:
+          name: Comment on GitHub pull request
+          command: |
+            sudo apt-get install jq
+
+            pr_response=$(curl --location --request GET "https://api.github.com/repos/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME/pulls?head=$CIRCLE_PROJECT_USERNAME:$CIRCLE_BRANCH&state=open" \
+            -u $GH_USER:$GH_TOKEN)
+
+            if [ $(echo $pr_response | jq length) -eq 0 ]; then
+              echo "No PR found to update"
+            else
+              pr_comment_url=$(echo $pr_response | jq -r ".[]._links.comments.href")
+            fi
+
+            curl --location --request POST "$pr_comment_url" \
+            -u $GH_USER:$GH_TOKEN \
+            --header 'Content-Type: application/json' \
+            --data-raw '{
+            "body": "This would be the data to add"
+            }'
     environment:
       DEPENDENCY_FILES: pypi:requirements.txt,npm:package.json,rubygems:Gemfile
 
 workflows:
   build:
     jobs:
+      - install-packj:
+          filters:
+            branches:
+              only: main
       - packj-audit:
           filters:
             branches:
