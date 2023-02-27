@@ -11,13 +11,12 @@ jobs:
       - run: git clone https://github.com/ossillate-inc/packj
       - run: /usr/local/bin/python -m pip install --upgrade pip
       - run: pip install -r ./packj/requirements.txt
-
-  packj-audit:
-    docker:
-      - image: circleci/python:3.8
-    steps:
-      - checkout
-      - run: ls -al
+      # packj-audit:
+      #   docker:
+      #     - image: circleci/python:3.8
+      #   steps:
+      #     - checkout
+      #     - run: ls -al
       - run:
           name: Audit dependency files with Packj
           command: |
@@ -64,10 +63,6 @@ workflows:
   build:
     jobs:
       - install-packj:
-          filters:
-            branches:
-              only: main
-      - packj-audit:
           filters:
             branches:
               only: main
