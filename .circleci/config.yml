@@ -31,7 +31,7 @@ jobs:
                     python ./packj/main.py audit -f $input
             fi
       - run:
-          name: Prepare comment for GitHub pull request
+          name: Comment on GitHub pull request
           command: |
             if [ -f /tmp/packj_audit_*/*.html ]; then
               html_report=$(ls /tmp/packj_audit_*/*.html)
@@ -40,16 +40,12 @@ jobs:
               echo "<h4>Failed to perform Packj audit! Refer to workflow run for details</h4>" > GITHUB_COMMENT.md
             fi
 
-            STR=''
+            COMMENT_STR=''
             for groupline in "$(cat GITHUB_COMMENT.md)"
             do
-                    STR+="$groupline";
+                    COMMENT_STR+="$groupline";
             done
-            echo $STR > GITHUB_COMMENT.md
-            cat GITHUB_COMMENT.md
-      - run:
-          name: Comment on GitHub pull request
-          command: |
+
             sudo apt-get install jq
 
             pr_response=$(curl --location --request GET "https://api.github.com/repos/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME/pulls?base=$CIRCLE_BRANCH&state=open" -u $GH_USER:$GH_TOKEN)
@@ -62,7 +58,7 @@ jobs:
                 -u $GH_USER:$GH_TOKEN \
                 --header 'Content-Type: application/json' \
                 --data-raw '{ \
-                "body": '$(cat GITHUB_COMMENT.md)' \
+                "body": "$COMMENT_STR" \
               }'
             fi
     environment:
