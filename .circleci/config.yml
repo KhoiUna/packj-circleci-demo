@@ -1,7 +1,7 @@
 version: 2.1
 
 jobs:
-  audit:
+  packj-audit:
     docker:
       - image: circleci/python:3.8
     steps:
@@ -64,9 +64,9 @@ jobs:
       DEPENDENCY_FILES: pypi:requirements.txt,npm:package.json,rubygems:Gemfile
 
 workflows:
-  packj-audit:
+  test:
     jobs:
-      - audit:
+      - packj-audit:
           filters:
             branches:
               only: main
