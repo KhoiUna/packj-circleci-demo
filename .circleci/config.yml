@@ -62,7 +62,7 @@ jobs:
                 -u $GH_USER:$GH_TOKEN \
                 --header 'Content-Type: application/json' \
                 --data-raw '{ \
-                "body": ["' $(cat GITHUB_COMMENT.md) '", ...] \
+                "body": "'$(cat GITHUB_COMMENT.md) '" \
               }'
             fi
     environment:
