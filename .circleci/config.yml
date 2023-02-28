@@ -51,14 +51,14 @@ jobs:
 
             sudo apt-get install jq
 
-            # Install gh cli            
+            # Install gh CLI    
             curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | sudo dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg \
             && sudo chmod go+r /usr/share/keyrings/githubcli-archive-keyring.gpg \
             && echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null \
             && sudo apt update \
             && sudo apt install gh -y
             gh --version
-            gh auth login --with-token < echo $GH_TOKEN
+            gh auth login --with-token < $GH_TOKEN
 
             pr_response=$(curl --location --request GET "https://api.github.com/repos/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME/pulls?base=$CIRCLE_BRANCH&state=open" -u $GH_USER:$GH_TOKEN)
 
