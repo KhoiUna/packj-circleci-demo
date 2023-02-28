@@ -42,12 +42,12 @@ jobs:
               echo "<h4>Failed to perform Packj audit! Refer to workflow run for details</h4>" > GITHUB_COMMENT.md
             fi
 
-            COMMENT_STR=''
-            for groupline in "$(cat GITHUB_COMMENT.md)"
-            do
-                    COMMENT_STR+="$groupline";
-            done
-            echo $COMMENT_STR
+            # COMMENT_STR=''
+            # for groupline in "$(cat GITHUB_COMMENT.md)"
+            # do
+            #         COMMENT_STR+="$groupline";
+            # done
+            # echo $COMMENT_STR
 
             sudo apt-get install jq
 
@@ -57,7 +57,6 @@ jobs:
             && echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null \
             && sudo apt update \
             && sudo apt install gh -y
-            gh auth status
 
             pr_response=$(curl --location --request GET "https://api.github.com/repos/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME/pulls?base=$CIRCLE_BRANCH&state=open" -u $GH_USER:$GH_TOKEN)
 
@@ -67,14 +66,16 @@ jobs:
               pr_comment_url=$(echo $pr_response |jq -r ".[]._links.comments.href")
               
               pr_number=$(echo $pr_response |jq -r ".[].number")
-              echo $pr_number
+              # echo $pr_number
 
-              curl --location --request POST "$pr_comment_url" \
-                -u $GH_USER:$GH_TOKEN \
-                --header 'Content-Type: application/json' \
-                --data-raw '{ \
-                "body": "'$COMMENT_STR'" \
-              }'
+              gh pr comment --body-file GITHUB_COMMENT.md
+
+              # curl --location --request POST "$pr_comment_url" \
+              #   -u $GH_USER:$GH_TOKEN \
+              #   --header 'Content-Type: application/json' \
+              #   --data-raw '{ \
+              #   "body": "'$COMMENT_STR'" \
+              # }'
             fi
     environment:
       DEPENDENCY_FILES: pypi:requirements.txt,npm:package.json,rubygems:Gemfile
