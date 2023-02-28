@@ -33,7 +33,7 @@ jobs:
       - run:
           name: Prepare comment for GitHub pull request
           command: |
-            echo "BODY<<EOF" > GITHUB_COMMENT.md
+            echo "BODY\<<EOF" > GITHUB_COMMENT.md
             if [ -f /tmp/packj_audit_*/*.html ]; then
               html_report=$(ls /tmp/packj_audit_*/*.html)
               cat $html_report |head -n -2 |tail -n +10 |sed 's/^[\s\t\r]*//g' >> GITHUB_COMMENT.md
