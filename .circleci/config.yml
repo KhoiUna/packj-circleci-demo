@@ -45,6 +45,7 @@ jobs:
             do
                     COMMENT_STR+="$groupline";
             done
+            echo $COMMENT_STR
 
             sudo apt-get install jq
 
@@ -58,7 +59,7 @@ jobs:
                 -u $GH_USER:$GH_TOKEN \
                 --header 'Content-Type: application/json' \
                 --data-raw '{ \
-                "body": "$COMMENT_STR" \
+                "body": "'$COMMENT_STR'" \
               }'
             fi
     environment:
