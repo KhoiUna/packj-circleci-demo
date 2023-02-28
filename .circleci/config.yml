@@ -33,20 +33,21 @@ jobs:
       - run:
           name: Prepare comment for GitHub pull request
           command: |
+            # echo "BODY<<EOF" >> GITHUB_COMMENT.md
             if [ -f /tmp/packj_audit_*/*.html ]; then
               html_report=$(ls /tmp/packj_audit_*/*.html)
               cat $html_report |head -n -2 |tail -n +10 |sed 's/^[\s\t\r]*//g' > GITHUB_COMMENT.md
             else
               echo "<h4>Failed to perform Packj audit! Refer to workflow run for details</h4>" > GITHUB_COMMENT.md
             fi
-
+            # echo "EOF" >> GITHUB_COMMENT.md
             STR=''
             for groupline in "$(cat GITHUB_COMMENT.md)"
             do
-                    STR+=$groupline;
+                    STR+="$groupline";
             done
             echo $STR > GITHUB_COMMENT.md
-            # cat GITHUB_COMMENT.md
+            cat GITHUB_COMMENT.md
       - run:
           name: Comment on GitHub pull request
           command: |
@@ -62,7 +63,7 @@ jobs:
                 -u $GH_USER:$GH_TOKEN \
                 --header 'Content-Type: application/json' \
                 --data-raw '{ \
-                "body": "'$(cat GITHUB_COMMENT.md) '" \
+                "body": '$(cat GITHUB_COMMENT.md)' \
               }'
             fi
     environment:
