@@ -39,6 +39,7 @@ jobs:
             else
               echo "<h4>Failed to perform Packj audit! Refer to workflow run for details</h4>" > GITHUB_COMMENT.md
             fi
+            cat GITHUB_COMMENT.md
       - run:
           name: Comment on GitHub pull request
           command: |
@@ -54,7 +55,7 @@ jobs:
                 -u $GH_USER:$GH_TOKEN \
                 --header 'Content-Type: application/json' \
                 --data-raw '{
-                "body": $(cat GITHUB_COMMENT.md)
+                "body": '$(cat GITHUB_COMMENT.md)'
                 }'
             fi
     environment:
