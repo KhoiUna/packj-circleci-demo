@@ -58,8 +58,8 @@ jobs:
             && sudo apt update \
             && sudo apt install gh -y
             gh --version
-            echo $GH_TOKEN > GH_TOKEN.txt
-            gh auth login --with-token < GH_TOKEN.txt
+            # echo $GH_TOKEN > GH_TOKEN.txt
+            # gh auth login --with-token < GH_TOKEN.txt
             gh auth status
 
             pr_response=$(curl --location --request GET "https://api.github.com/repos/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME/pulls?base=$CIRCLE_BRANCH&state=open" -u $GH_USER:$GH_TOKEN)
