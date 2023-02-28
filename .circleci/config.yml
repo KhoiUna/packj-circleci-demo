@@ -33,6 +33,8 @@ jobs:
       - run:
           name: Comment on GitHub pull request
           command: |
+            ls /tmp/packj_audit_*/*.html -al
+
             if [ -f /tmp/packj_audit_*/*.html ]; then
               html_report=$(ls /tmp/packj_audit_*/*.html)
               cat $html_report |head -n -2 |tail -n +10 |sed 's/^[\s\t\r]*//g' > GITHUB_COMMENT.md
@@ -49,12 +51,25 @@ jobs:
 
             sudo apt-get install jq
 
+            # Install gh cli            
+            curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | sudo dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg \
+            && sudo chmod go+r /usr/share/keyrings/githubcli-archive-keyring.gpg \
+            && echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null \
+            && sudo apt update \
+            && sudo apt install gh -y
+            gh --version
+            gh auth login --with-token $GH_TOKEN
+
             pr_response=$(curl --location --request GET "https://api.github.com/repos/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME/pulls?base=$CIRCLE_BRANCH&state=open" -u $GH_USER:$GH_TOKEN)
 
             if [ $(echo $pr_response |jq length) -eq 0 ]; then
               echo "No PR found to update"
             else
               pr_comment_url=$(echo $pr_response |jq -r ".[]._links.comments.href")
+              
+              pr_number=$(echo $pr_response |jq -r ".[].number")
+              echo $pr_number
+
               curl --location --request POST "$pr_comment_url" \
                 -u $GH_USER:$GH_TOKEN \
                 --header 'Content-Type: application/json' \
