@@ -46,7 +46,7 @@ jobs:
                     STR+=$groupline;
             done
             echo $STR > GITHUB_COMMENT.md
-            cat GITHUB_COMMENT.md
+            # cat GITHUB_COMMENT.md
       - run:
           name: Comment on GitHub pull request
           command: |
@@ -58,12 +58,16 @@ jobs:
               echo "No PR found to update"
             else
               pr_comment_url=$(echo $pr_response |jq -r ".[]._links.comments.href")
-              curl --location --request POST "$pr_comment_url" \
-                -u $GH_USER:$GH_TOKEN \
-                --header 'Content-Type: application/json' \
-                --data-raw '{
-                "body": '$(cat GITHUB_COMMENT.md)'
-                }'
+              { printf '{ "body":["'
+                cat GITHUB_COMMENT.md
+                printf '", ...]}"'
+              } |curl --location --request POST "$pr_comment_url" \
+                  -u $GH_USER:$GH_TOKEN \
+                  --header 'Content-Type: application/json' \
+                  --data-binary @-'
+                # --data-binary '{ \
+                # "body": "$(cat GITHUB_COMMENT.md)" 
+                # }'
             fi
     environment:
       DEPENDENCY_FILES: pypi:requirements.txt,npm:package.json,rubygems:Gemfile
