@@ -42,13 +42,6 @@ jobs:
               echo "<h4>Failed to perform Packj audit! Refer to workflow run for details</h4>" > GITHUB_COMMENT.md
             fi
 
-            # COMMENT_STR=''
-            # for groupline in "$(cat GITHUB_COMMENT.md)"
-            # do
-            #         COMMENT_STR+="$groupline";
-            # done
-            # echo $COMMENT_STR
-
             sudo apt-get install jq
 
             # Install gh CLI    
@@ -63,19 +56,8 @@ jobs:
             if [ $(echo $pr_response |jq length) -eq 0 ]; then
               echo "No PR found to update"
             else
-              pr_comment_url=$(echo $pr_response |jq -r ".[]._links.comments.href")
-              
               pr_number=$(echo $pr_response |jq -r ".[].number")
-              # echo $pr_number
-
-              gh pr comment --body-file GITHUB_COMMENT.md
-
-              # curl --location --request POST "$pr_comment_url" \
-              #   -u $GH_USER:$GH_TOKEN \
-              #   --header 'Content-Type: application/json' \
-              #   --data-raw '{ \
-              #   "body": "'$COMMENT_STR'" \
-              # }'
+              gh pr comment $pr_number --body-file GITHUB_COMMENT.md
             fi
     environment:
       DEPENDENCY_FILES: pypi:requirements.txt,npm:package.json,rubygems:Gemfile
