@@ -1,7 +1,7 @@
 version: 2.1
 
 jobs:
-  packj-audit:
+  audit:
     docker:
       - image: circleci/python:3.8
     steps:
@@ -31,6 +31,18 @@ jobs:
                     python ./packj/main.py audit -f $input
             fi
       - run:
+          name: Prepare comment for GitHub pull request
+          command: |
+            echo "BODY<<EOF" > GITHUB_COMMENT.md
+            if [ -f /tmp/packj_audit_*/*.html ]; then
+              html_report=$(ls /tmp/packj_audit_*/*.html)
+              cat $html_report |head -n -2 |tail -n +10 |sed 's/^[\s\t\r]*//g' >> GITHUB_COMMENT.md
+            else
+              echo "<h4>Failed to perform Packj audit! Refer to workflow run for details</h4>" >> GITHUB_COMMENT.md
+            fi
+            echo "EOF" >> GITHUB_COMMENT.md
+            echo "TITLE=Packj audit found risky dependencies!" >> GITHUB_COMMENT.md
+      - run:
           name: Comment on GitHub pull request
           command: |
             sudo apt-get install jq
@@ -45,16 +57,16 @@ jobs:
                 -u $GH_USER:$GH_TOKEN \
                 --header 'Content-Type: application/json' \
                 --data-raw '{
-                "body": "This would be the data to add"
+                "body": $(cat GITHUB_COMMENT.md)
                 }'
             fi
     environment:
       DEPENDENCY_FILES: pypi:requirements.txt,npm:package.json,rubygems:Gemfile
 
 workflows:
-  build:
+  packj-audit:
     jobs:
-      - packj-audit:
+      - audit:
           filters:
             branches:
               only: main
